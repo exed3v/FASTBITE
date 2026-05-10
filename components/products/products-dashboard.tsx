@@ -20,7 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent } from "@/components/ui/card";
+
 import ProductFormDialog from "./product-form-dialog";
+
+import ProductsFilters from "./products-filters";
+import DeleteProductDialog from "./delete-product-dialog";
 
 type ProductsDashboardProps = {
   productos: Producto[];
@@ -36,21 +40,36 @@ const ProductsDashboard = ({
     "todos",
   );
 
-  const [editing, setEditing] = useState<Producto | null>(null);
+  const [query, setQuery] = useState("");
 
+  const [availability, setAvailability] = useState<"todos" | "si" | "no">(
+    "todos",
+  );
+
+  const [editing, setEditing] = useState<Producto | null>(null);
+  const [toDelete, setToDelete] = useState<Producto | null>(null);
   const [open, setOpen] = useState(false);
 
   const [isPending, startTransition] = useTransition();
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "todos") {
-      return productos;
-    }
+    return productos.filter((product) => {
+      const matchesCategory =
+        selectedCategory === "todos" ||
+        product.categorias?.slug === selectedCategory;
 
-    return productos.filter(
-      (product) => product.categorias?.slug === selectedCategory,
-    );
-  }, [productos, selectedCategory]);
+      const matchesSearch = product.nombre
+        .toLowerCase()
+        .includes(query.toLowerCase());
+
+      const matchesAvailability =
+        availability === "todos" ||
+        (availability === "si" && product.disponible) ||
+        (availability === "no" && !product.disponible);
+
+      return matchesCategory && matchesSearch && matchesAvailability;
+    });
+  }, [productos, selectedCategory, query, availability]);
 
   const handleCreate = () => {
     setEditing(null);
@@ -65,19 +84,23 @@ const ProductsDashboard = ({
   };
 
   const handleDelete = (product: Producto) => {
-    const confirmed = window.confirm(`¿Eliminar "${product.nombre}"?`);
+    setToDelete(product);
+  };
 
-    if (!confirmed) {
+  const confirmDelete = async () => {
+    if (!toDelete) {
       return;
     }
 
     startTransition(async () => {
       try {
-        await deleteProduct(product.id, product.imagen_url);
+        await deleteProduct(toDelete.id, toDelete.imagen_url);
 
         toast({
           title: "Producto eliminado",
         });
+
+        setToDelete(null);
       } catch (error) {
         console.error(error);
 
@@ -132,26 +155,15 @@ const ProductsDashboard = ({
         </Button>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant={selectedCategory === "todos" ? "cta" : "outline"}
-          onClick={() => setSelectedCategory("todos")}
-        >
-          Todos
-        </Button>
-
-        {categorias.map((categoria) => (
-          <Button
-            key={categoria.id}
-            size="sm"
-            variant={selectedCategory === categoria.slug ? "cta" : "outline"}
-            onClick={() => setSelectedCategory(categoria.slug)}
-          >
-            {categoria.nombre}
-          </Button>
-        ))}
-      </div>
+      <ProductsFilters
+        query={query}
+        onQueryChange={setQuery}
+        category={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        availability={availability}
+        onAvailabilityChange={setAvailability}
+        categorias={categorias}
+      />
 
       {filteredProducts.length === 0 ? (
         <Card>
@@ -237,6 +249,18 @@ const ProductsDashboard = ({
         onOpenChange={setOpen}
         editing={editing}
         categorias={categorias}
+      />
+
+      <DeleteProductDialog
+        open={!!toDelete}
+        product={toDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setToDelete(null);
+          }
+        }}
+        onConfirm={confirmDelete}
+        loading={isPending}
       />
     </>
   );
