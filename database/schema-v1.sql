@@ -268,15 +268,6 @@ begin
     new.raw_user_meta_data ->> 'full_name'
   );
 
-  insert into public.user_roles (
-    user_id,
-    role
-  )
-  values (
-    new.id,
-    'admin'
-  );
-
   return new;
 
 end;

@@ -1,5 +1,22 @@
-const notFound = () => {
-  return <div>not-found</div>;
-};
+import Link from "next/link";
 
-export default notFound;
+export default function NotFound() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
+      <div className="text-center">
+        <h1 className="mb-4 text-6xl font-black">404</h1>
+
+        <p className="mb-6 text-xl text-muted-foreground">
+          Oops! Page not found
+        </p>
+
+        <Link
+          href="/"
+          className="text-primary underline underline-offset-4 hover:text-primary/90"
+        >
+          Return to Home
+        </Link>
+      </div>
+    </div>
+  );
+}
