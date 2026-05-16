@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { adminClient } from "@/lib/supabase/admin";
 
 const orderItemSchema = z.object({
   producto_id: z.uuid(),
@@ -72,7 +73,8 @@ export async function createOrder(input: CreateOrderInput) {
     );
   }
 
-  const supabase = await createClient();
+  // const supabase = await createClient();
+  const supabase = adminClient;
 
   const orderData = parsed.data;
 
