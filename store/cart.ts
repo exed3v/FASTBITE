@@ -1,5 +1,4 @@
 import { create } from "zustand";
-
 import { persist } from "zustand/middleware";
 
 export type CartItem = {
@@ -24,11 +23,9 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-
       add: (item) =>
         set((state) => {
           const found = state.items.find((cartItem) => cartItem.id === item.id);
-
           if (found) {
             return {
               items: state.items.map((cartItem) =>
@@ -41,7 +38,6 @@ export const useCart = create<CartStore>()(
               ),
             };
           }
-
           return {
             items: [
               ...state.items,
@@ -52,12 +48,10 @@ export const useCart = create<CartStore>()(
             ],
           };
         }),
-
       remove: (id) =>
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
         })),
-
       setQty: (id, cantidad) =>
         set((state) => ({
           items:
@@ -72,15 +66,12 @@ export const useCart = create<CartStore>()(
                     : item,
                 ),
         })),
-
       clear: () =>
         set({
           items: [],
         }),
-
       subtotal: () =>
         get().items.reduce((acc, item) => acc + item.precio * item.cantidad, 0),
-
       count: () => get().items.reduce((acc, item) => acc + item.cantidad, 0),
     }),
     {
