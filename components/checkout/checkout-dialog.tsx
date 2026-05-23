@@ -45,13 +45,9 @@ const CheckoutDialog = () => {
     direccion: "",
     notas: "",
   });
-
   const [loading, setLoading] = useState(false);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const deliveryFee = deliveryType === "delivery" ? DELIVERY_FEE : 0;
-
   const total = subtotal + deliveryFee;
 
   const onSubmit = async (event: React.FormEvent) => {
@@ -74,62 +70,53 @@ const CheckoutDialog = () => {
       setErrors({
         direccion: "La dirección es obligatoria",
       });
-
       return;
     }
     if (items.length === 0) {
+      toast({
+        title: "Carrito vacío",
+        description: "Agrega productos antes de continuar.",
+        variant: "destructive",
+      });
+
       return;
     }
     setLoading(true);
     try {
       const result = await createOrder({
         cliente_nombre: parsed.data.cliente_nombre,
-
         telefono: parsed.data.telefono,
-
         direccion:
           deliveryType === "pickup" ? null : (parsed.data.direccion ?? null),
-
         notas: parsed.data.notas ?? null,
-
         delivery_type: deliveryType,
-
         payment_method: paymentMethod,
-
         subtotal,
-
         delivery_fee: deliveryFee,
-
         total,
-
         items: items.map((item) => ({
           producto_id: item.id,
-
           producto_nombre: item.nombre,
-
           cantidad: item.cantidad,
-
           precio_unitario: item.precio,
         })),
       });
 
       if (paymentMethod === "efectivo") {
         clearCart();
-
         closeCheckout();
-
         toast({
           title: "Pedido realizado",
-
           description: "Tu pedido fue enviado correctamente.",
         });
         return;
       }
-      console.log(result);
-      toast({
-        title: "Mercado Pago próximamente",
-        description: "El flujo de pago será integrado en el siguiente paso.",
-      });
+      if (result.initPoint) {
+        window.location.href = result.initPoint;
+        return;
+      }
+
+      throw new Error("No se pudo iniciar Mercado Pago");
     } catch (error) {
       toast({
         title: "Error al crear pedido",
