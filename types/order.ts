@@ -5,20 +5,26 @@ export type Estado =
   | "entregado"
   | "cancelado";
 
+export type PaymentMethod = "mercadopago" | "efectivo";
+
+export type PaymentStatus = "pendiente" | "aprobado" | "rechazado";
+
+export type DeliveryType = "delivery" | "pickup";
+
 export type Pedido = {
   id: string;
   cliente_nombre: string;
   telefono: string;
-  direccion: string;
+  direccion: string | null;
   notas: string | null;
   subtotal: number;
   delivery_fee: number;
-  delivery_type: "delivery" | "pickup";
+  delivery_type: DeliveryType;
   total: number;
   estado: Estado;
-  payment_method: string;
+  payment_method: PaymentMethod;
   payment_id: string | null;
-  payment_status: string | null;
+  payment_status: PaymentStatus | null;
   created_at: string;
 };
 
@@ -55,7 +61,6 @@ export const ESTADOS: {
     label: "En camino",
     color: "border-violet-500/20 bg-violet-500/15 text-violet-500",
   },
-
   {
     value: "entregado",
     label: "Entregado",
@@ -67,3 +72,28 @@ export const ESTADOS: {
     color: "border-red-500/20 bg-red-500/15 text-red-500",
   },
 ];
+
+export function metodoPagoLabel(method: PaymentMethod) {
+  return method === "mercadopago" ? "Mercado Pago" : "Efectivo";
+}
+
+export function isDelivery(deliveryType: DeliveryType) {
+  return deliveryType === "delivery";
+}
+
+export type OrdersFilters = {
+  q?: string;
+  estado?: Estado | "todos";
+  pago?: PaymentMethod | "todos";
+  tipo?: DeliveryType | "todos";
+  fecha?: "todos" | "hoy" | "7d" | "30d";
+  page?: number;
+};
+
+export function estadoBadge(estado: Estado) {
+  return ESTADOS.find((e) => e.value === estado)?.color ?? "";
+}
+
+export function estadoLabel(estado: Estado) {
+  return ESTADOS.find((e) => e.value === estado)?.label ?? estado;
+}

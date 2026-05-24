@@ -1,23 +1,17 @@
 "use client";
 
 import Link from "next/link";
-
 import { useRouter } from "next/navigation";
-
 import { LayoutDashboard, LogOut, Package, ShoppingBag } from "lucide-react";
-
 import { createClient } from "@/lib/supabase/browser";
-
 import { Button } from "@/components/ui/button";
 
 const AdminNavbar = () => {
   const router = useRouter();
-
   const supabase = createClient();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-
     router.replace("/auth/login");
   };
 
